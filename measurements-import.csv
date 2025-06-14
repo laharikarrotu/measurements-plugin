@@ -1,7 +1,0 @@
-timestamp,value,unit,category,notes
-2024-03-20T10:00:00Z,75.5,kg,weight,Morning measurement
-2024-03-20T14:00:00Z,76.2,kg,weight,After lunch
-2024-03-20T18:00:00Z,75.8,kg,weight,Evening measurement
-2024-03-21T10:00:00Z,75.3,kg,weight,Morning measurement
-2024-03-21T14:00:00Z,76.0,kg,weight,After lunch
-2024-03-21T18:00:00Z,75.6,kg,weight,Evening measurement 

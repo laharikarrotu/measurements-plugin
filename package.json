@@ -19,6 +19,8 @@
     "typescript": "^4.9.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.0.0",
     "@types/jest": "^27.0.0",
     "@types/papaparse": "^5.3.14",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
@@ -26,8 +28,7 @@
     "eslint": "^8.0.0",
     "eslint-plugin-react": "^7.0.0",
     "eslint-plugin-react-hooks": "^4.0.0",
-    "prettier": "^2.8.0",
-    "@testing-library/react": "^13.0.0"
+    "prettier": "^2.8.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -68,5 +69,5 @@
   "bugs": {
     "url": "https://github.com/laharikarrotu/measurements-plugin/issues"
   },
-  "homepage": "https://github.com/laharikarrotu/measurements-plugin#readme"
+  "homepage": "."
 }

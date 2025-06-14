@@ -67,4 +67,20 @@ export interface MeasurementFilter {
   minValue?: number;
   maxValue?: number;
   category?: string;
+}
+
+export interface MeasurementFormData {
+  value: number;
+  unit: string;
+  category: string;
+  notes: string;
+}
+
+export interface Measurement {
+  id: number;
+  timestamp: string;
+  value: number;
+  unit: string;
+  category: string;
+  notes: string;
 } 
