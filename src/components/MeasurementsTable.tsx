@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { BaserowRecord } from '../api/baserowClient';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 interface MeasurementsTableProps {
   measurements: BaserowRecord[];
@@ -14,211 +16,139 @@ const MeasurementsTable: React.FC<MeasurementsTableProps> = ({
 }) => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<BaserowRecord>>({});
+  const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
-  const handleEdit = (measurement: BaserowRecord) => {
-    setEditingId(measurement.id);
-    setEditForm(measurement);
+  const handleEdit = async (id: number) => {
+    if (editingId === id) {
+      try {
+        await onEdit(id, editForm);
+        setEditingId(null);
+        setEditForm({});
+      } catch (error) {
+        console.error('Error updating measurement:', error);
+      }
+    } else {
+      const measurement = measurements.find(m => m.id === id);
+      if (measurement) {
+        setEditingId(id);
+        setEditForm(measurement);
+      }
+    }
   };
 
-  const handleSave = async (id: number) => {
-    await onEdit(id, editForm);
-    setEditingId(null);
-    setEditForm({});
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditForm({});
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Are you sure you want to delete this measurement?')) {
+      setIsDeleting(id);
+      try {
+        await onDelete(id);
+      } catch (error) {
+        console.error('Error deleting measurement:', error);
+      } finally {
+        setIsDeleting(null);
+      }
+    }
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+    <div className="overflow-x-auto rounded-lg shadow-lg">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fabric Code</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blind Type</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Control</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mount</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Window Description</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Width (Cm)</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Height (Cm)</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sq.mt</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Customer
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Window
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Dimensions
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Blind Type
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Control
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Mount
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {measurements.map((measurement) => (
-            <tr key={measurement.id} className="hover:bg-gray-100">
+            <motion.tr
+              key={measurement.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="hover:bg-gray-50 transition-colors"
+            >
               <td className="px-6 py-4 whitespace-nowrap">
-                {editingId === measurement.id ? (
-                  <input
-                    type="text"
-                    value={editForm.Fabric_Code || ''}
-                    onChange={(e) => setEditForm({ ...editForm, Fabric_Code: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <div className="text-sm text-gray-900">{measurement.Fabric_Code}</div>
-                )}
+                <div className="flex items-center">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {measurement.Customer_Name}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {measurement.Contact}
+                    </div>
+                  </div>
+                </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {editingId === measurement.id ? (
-                  <select
-                    value={editForm.Blind_Type || ''}
-                    onChange={(e) => setEditForm({ ...editForm, Blind_Type: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="Zebra">Zebra</option>
-                    <option value="Roller">Roller</option>
-                    <option value="Honeycomb">Honeycomb</option>
-                    <option value="Shangrila">Shangrila</option>
-                    <option value="Dream">Dream</option>
-                  </select>
-                ) : (
-                  <div className="text-sm text-gray-900">{measurement.Blind_Type}</div>
-                )}
+                <div className="text-sm text-gray-900">{measurement.Window_Description}</div>
+                <div className="text-sm text-gray-500">{measurement.Fabric_Code}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {editingId === measurement.id ? (
-                  <select
-                    value={editForm.Control || ''}
-                    onChange={(e) => setEditForm({ ...editForm, Control: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="Motorized">Motorized</option>
-                    <option value="Manual">Manual</option>
-                  </select>
-                ) : (
-                  <div className="text-sm text-gray-900">{measurement.Control}</div>
-                )}
+                <div className="text-sm text-gray-900">
+                  {measurement.Width_Cm} × {measurement.Height_Cm} cm
+                </div>
+                <div className="text-sm text-gray-500">
+                  {measurement.Sq_mt.toFixed(2)} m²
+                </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {editingId === measurement.id ? (
-                  <select
-                    value={editForm.Mount || ''}
-                    onChange={(e) => setEditForm({ ...editForm, Mount: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="Inside">Inside</option>
-                    <option value="Outside">Outside</option>
-                  </select>
-                ) : (
-                  <div className="text-sm text-gray-900">{measurement.Mount}</div>
-                )}
+                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                  {measurement.Blind_Type}
+                </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {editingId === measurement.id ? (
-                  <input
-                    type="text"
-                    value={editForm.Window_Description || ''}
-                    onChange={(e) => setEditForm({ ...editForm, Window_Description: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <div className="text-sm text-gray-900">{measurement.Window_Description}</div>
-                )}
+                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                  {measurement.Control}
+                </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {editingId === measurement.id ? (
-                  <input
-                    type="number"
-                    value={editForm.Width_Cm || ''}
-                    onChange={(e) => setEditForm({ ...editForm, Width_Cm: parseFloat(e.target.value) })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <div className="text-sm text-gray-900">{measurement.Width_Cm}</div>
-                )}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {editingId === measurement.id ? (
-                  <input
-                    type="number"
-                    value={editForm.Height_Cm || ''}
-                    onChange={(e) => setEditForm({ ...editForm, Height_Cm: parseFloat(e.target.value) })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <div className="text-sm text-gray-900">{measurement.Height_Cm}</div>
-                )}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{measurement.Sq_mt}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {editingId === measurement.id ? (
-                  <input
-                    type="text"
-                    value={editForm.Customer_Name || ''}
-                    onChange={(e) => setEditForm({ ...editForm, Customer_Name: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <div className="text-sm text-gray-900">{measurement.Customer_Name}</div>
-                )}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {editingId === measurement.id ? (
-                  <input
-                    type="text"
-                    value={editForm.Contact || ''}
-                    onChange={(e) => setEditForm({ ...editForm, Contact: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <div className="text-sm text-gray-900">{measurement.Contact}</div>
-                )}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {editingId === measurement.id ? (
-                  <input
-                    type="date"
-                    value={editForm.Date || ''}
-                    onChange={(e) => setEditForm({ ...editForm, Date: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <div className="text-sm text-gray-900">{new Date(measurement.Date).toLocaleDateString()}</div>
-                )}
+                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                  {measurement.Mount}
+                </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                {editingId === measurement.id ? (
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleSave(measurement.id)}
-                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={handleCancel}
-                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleEdit(measurement)}
-                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => onDelete(measurement.id)}
-                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
+                <div className="flex space-x-2">
+                  <Link
+                    to={`/customer/${encodeURIComponent(measurement.Customer_Name)}`}
+                    className="text-indigo-600 hover:text-indigo-900"
+                  >
+                    View
+                  </Link>
+                  <button
+                    onClick={() => handleEdit(measurement.id)}
+                    className="text-blue-600 hover:text-blue-900"
+                  >
+                    {editingId === measurement.id ? 'Save' : 'Edit'}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(measurement.id)}
+                    disabled={isDeleting === measurement.id}
+                    className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                  >
+                    {isDeleting === measurement.id ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
               </td>
-            </tr>
+            </motion.tr>
           ))}
         </tbody>
       </table>
